@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pandas.testing as pd_testing
 import os
@@ -24,7 +25,7 @@ class TestInfluxMetrics(unittest.TestCase):
         base = os.path.abspath(os.path.join(base, os.pardir))
         base = os.path.join(base, 'helpers')
         base = os.path.join(base, path)
-        base = os.path.join(base, 'get-price-cumulatives.csv')
+        base = os.path.join(base, 'gpc-mock-df.csv')
 
         df = pd.read_csv(base, sep=',')
         df._start = pd.to_datetime(df._start)
@@ -255,7 +256,23 @@ class TestInfluxMetrics(unittest.TestCase):
 
         SEE: https://oips.overlay.market/notes/note-4
         """
-        pass
+        ns = [144, 1008, 2016, 4320]
+        alphas = np.array([0.05, 0.01, 0.001, 0.0001])
+        mu = 6.069100818896536e-08
+        sig_sqrd = 7.394297298434553e-08
+        t = 600
+
+        expected = [
+                np.array([0.14648191, 0.21067393, 0.28690824, 0.3532486]),
+                np.array([0.4686489 , 0.69635374, 0.99380545, 1.27740121]),
+                np.array([0.75926378, 1.15704158, 1.71074542, 2.27166734]),
+                np.array([1.40229191, 2.23755272, 3.52350434, 4.95720961])
+                ]
+
+        for idx, n in enumerate(ns):
+            actual = imetrics.calc_vars(mu, sig_sqrd, t, n, alphas)
+            np.testing.assert_array_equal(actual, expected[idx])
+
 
     def test_get_stat(self):
         """

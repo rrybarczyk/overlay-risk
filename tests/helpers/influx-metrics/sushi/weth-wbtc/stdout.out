@@ -1,0 +1,69 @@
+python scripts/influx_metrics.py
+You are using data from the mainnet network
+PARAMS
+{'points': 30, 'window': 6, 'period': 600, 'alpha': [0.05, 0.01, 0.001, 0.0001], 'n': [144, 1008, 2016, 4320]}
+
+QUOTE
+{'id': 'Sushiswap: WETH / WBTC', 'pair': '0xCEfF51756c56CeFFCA006cD410B03FFC46dd3a58', 'token0': '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', 'token1': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 'token0_name': 'WBTC', 'token1_name': 'WETH', 'is_price0': False, 'amount_in': 1e+18}
+
+id Sushiswap: WETH / WBTC
+Fetching prices for Sushiswap: WETH / WBTC ...
+TIMESTAMP
+ 1625273103.0
+
+DATA DAYS
+ 29 days 23:32:46
+
+Number of days between latest and first data point: 29 days 23:32:46
+t = p["period"]
+ 600
+
+mu
+ 6.026957588792814e-08
+
+ss
+ 7.396430012129422e-08
+
+NN
+ [0.14648191 0.21067393 0.28690824 0.3532486 ]
+NN
+ [0.4686489  0.69635374 0.99380545 1.27740121]
+NN
+ [0.75926378 1.15704158 1.71074542 2.27166734]
+NN
+ [1.40229191 2.23755272 3.52350434 4.95720961]
+NS
+ [ 144 1008 2016 4320]
+
+VARS
+ [array([0.14648191, 0.21067393, 0.28690824, 0.3532486 ]), array([0.4686489 , 0.69635374, 0.99380545, 1.27740121]), array([0.75926378, 1.15704158, 1.71074542, 2.27166734]), array([1.40229191, 2.23755272, 3.52350434, 4.95720961])]
+
+t = p["period"]
+ 600
+
+mu
+ -6.055960634104798e-08
+
+ss
+ 1.8872398052927914e-09
+
+NN
+ [0.01589647 0.02477565 0.03482058 0.0431628 ]
+NN
+ [0.01912494 0.04286152 0.07012554 0.09310167]
+NN
+ [0.00535035 0.03862425 0.0772316  0.11008536]
+NN
+ [-0.04106118  0.00575278  0.06094821  0.10864745]
+NS
+ [ 144 1008 2016 4320]
+
+VARS
+ [array([0.01589647, 0.02477565, 0.03482058, 0.0431628 ]), array([0.01912494, 0.04286152, 0.07012554, 0.09310167]), array([0.00535035, 0.03862425, 0.0772316 , 0.11008536]), array([-0.04106118,  0.00575278,  0.06094821,  0.10864745])]
+
+0 TOKEN_NAME: WBTC
+Writing Sushiswap: WETH / WBTC for price0Cumulative to api ...
+1 TOKEN_NAME: WETH
+Writing Sushiswap: WETH / WBTC for price1Cumulative to api ...
+make[1]: Leaving directory '/home/rj/Documents/Work/Overlay/Dev/overlay-risk'
+(overlay-risk-1AZpInsj-py3.9)

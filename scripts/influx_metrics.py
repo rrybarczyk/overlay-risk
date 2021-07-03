@@ -1,3 +1,6 @@
+DEBUG = True
+import sys  # RR RM
+import csv  # RR RM
 import pandas as pd
 import numpy as np
 import os
@@ -303,7 +306,6 @@ def get_twap(pc: pd.DataFrame, q: tp.Dict, p: tp.Dict) -> pd.DataFrame:
     # Filter out any TWAPs that are less than or equal to 0;
     # TODO: Why? Ingestion from sushi?
     df = df[df['twap'] > 0]
-
     return df
 
 
@@ -347,6 +349,8 @@ def calc_vars(mu: float,
     q = 1 - alphas
     pow = mu * n * t + sig * np.sqrt(n * t) * norm.ppf(q)
     nn = np.exp(pow) - 1
+    if DEBUG:
+        print('NN\n', nn)
     return nn
 
 
@@ -363,11 +367,35 @@ def get_stat(
     ]
     mu = float(np.mean(rs) / t)
     ss = float(np.var(rs) / t)
+    if DEBUG:
+        print('t = p["period"]\n', t)
+        print()
+        print('mu')
+        print(mu)
+        print()
+        print('ss\n', ss)
+        print()
+        with open('get-stat-rs.csv', 'w') as f:
+            for i in rs:
+                f.write('%s\n' % i)
 
     # VaRs for 5%, 1%, 0.1%, 0.01% alphas, n periods into the future
     alphas = np.array(p["alpha"])
     ns = np.array(p["n"])
     vars = [calc_vars(mu, ss, t, n, alphas) for n in ns]
+
+    if DEBUG:
+        print('NS\n', ns)
+        print()
+        print('VARS\n', vars)
+        print()
+
+        for v in vars:
+            print(v)
+            for j in v:
+                print(j)
+
+    sys.exit()
     var_labels = [
         f'VaR alpha={alpha} n={n}'
         for n in ns
@@ -375,6 +403,11 @@ def get_stat(
     ]
 
     data = np.concatenate(([timestamp, mu, ss], *vars), axis=None)
+
+    if DEBUG:
+        with open('get-stat-data.csv', 'w') as f:
+            for i in data:
+                f.write('%s\n' % i)
 
     df = pd.DataFrame(data=data).T
     df.columns = ['timestamp', 'mu', 'sigSqrd', *var_labels]
@@ -394,6 +427,9 @@ def main():
     print("You are using data from the mainnet network")
     config = get_config()
     params = get_params()
+    print('PARAMS')
+    print(params)
+    print()
     quotes = get_quotes()
     client = create_client(config)
     query_api = client.query_api()
@@ -402,13 +438,27 @@ def main():
         point_settings=get_point_settings(),
     )
 
+    quotes = [quotes[0]]
     for q in quotes:
+        print('QUOTE')
+        print(q)
+        print()
         print('id', q['id'])
         try:
             timestamp, pcs = get_price_cumulatives(query_api, config, q,
                                                    params)
+            print('TIMESTAMP\n', timestamp)
+            print()
+
+            if DEBUG:
+                pcs[0].to_csv('gpc-pc-0.csv', index=False)
+                pcs[1].to_csv('gpc-pc-1.csv', index=False)
+
             # Calculate difference between max and min date.
             data_days = pcs[0]['_time'].max() - pcs[0]['_time'].min()
+            print('DATA DAYS\n', data_days)
+            print()
+
             print(
                 f"Number of days between latest and first "
                 f"data point: {data_days}"
@@ -423,16 +473,27 @@ def main():
                 continue
 
             twaps = get_twaps(pcs, q, params)
-            print('timestamp', timestamp)
-            print('twaps', twaps)
+            if DEBUG:
+                twaps[0].to_csv('twap-0.csv', index=False)
+                twaps[1].to_csv('twap-1.csv', index=False)
 
             # Calc stats for each twap (NOT inverse of each other)
             samples = get_samples_from_twaps(twaps)
+            if DEBUG:
+                f = open("samples.csv", "w")
+                f.write("{},{}\n".format("sample0", "sample1"))
+                for x in zip(samples[0], samples[1]):
+                    f.write("{},{}\n".format(x[0], x[1]))
+                f.close()
+
             stats = get_stats(timestamp, samples, q, params)
-            print('stats', stats)
+            if DEBUG:
+                stats[0].to_csv('stats-0.csv', index=False)
+                stats[1].to_csv('stats-1.csv', index=False)
 
             for i, stat in enumerate(stats):
                 token_name = q[f'token{i}_name']
+                print('{} TOKEN_NAME: {}'.format(i, token_name))
                 point = Point("mem")\
                     .tag("id", q['id'])\
                     .tag('token_name', token_name)\
@@ -447,7 +508,7 @@ def main():
                         point = point.field(col, float(stat[col]))
 
                 print(f"Writing {q['id']} for price{i}Cumulative to api ...")
-                write_api.write(config['bucket'], config['org'], point)
+                #  write_api.write(config['bucket'], config['org'], point)
 
         except Exception as e:
             print("Failed to write quote stats to influx")
